@@ -1,6 +1,6 @@
-import { Row, Col, Spinner } from "react-bootstrap";
+import { Row, Col, Spinner, Button, Card, Form } from "react-bootstrap";
+import Image from "next/image";
 import { useState } from "react";
-import Markdown from "react-markdown";
 
 const assistantId = process.env.NEXT_PUBLIC_OPENAI_ASSISTANT_ID;
 const messageLimit = 100;
@@ -11,29 +11,21 @@ type Message = {
   content: string;
 };
 
-const greetingMessage = {
-  role: "assistant",
-  content: "Hello! I am Bob Loblaw's Law Bot. How can I help you today?",
-};
+const greetingMessage = { role: "assistant", content: "Sups?" };
+const thinkingMessage = { role: "assistant", content: "🧠" };
 
 export default function Index() {
   const [isLoading, setIsLoading] = useState(false);
   const [threadId, setThreadId] = useState<string>();
   const [prompt, setPrompt] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
-  const [streamingMessage, setStreamingMessage] = useState({
-    role: "assistant",
-    content: "_Thinking..._",
-  });
+  const [streamingMessage, setStreamingMessage] = useState(thinkingMessage);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
     // clear streaming message
-    setStreamingMessage({
-      role: "assistant",
-      content: "_Thinking..._",
-    });
+    setStreamingMessage(thinkingMessage);
 
     // add busy indicator
     setIsLoading(true);
@@ -63,8 +55,6 @@ export default function Index() {
     let contentSnapshot = "";
     let newThreadId: string;
 
-    // this code can be simplified when more browsers support async iteration
-    // see https://developer.mozilla.org/en-US/docs/Web/API/Streams_API/Using_readable_streams#consuming_a_fetch_using_asynchronous_iteration
     let reader = response.body.getReader();
     while (true) {
       const { value, done } = await reader.read();
@@ -121,50 +111,55 @@ export default function Index() {
       </header>
 
       <Row>
-        <Col md={2}>ICON HERE</Col>
-        <Col>stuff </Col>
-      </Row>
-
-      <main>
-        <div className="flex flex-col bg-slate-200 shadow-md relative">
+        <Col md={2}>
+          <img src="/icon.webp" style={{ maxWidth: "95%", padding: 3 }} />
+        </Col>
+        <Col>
           <OpenAIAssistantMessage message={greetingMessage} />
+
           {messages.map((m) => (
             <OpenAIAssistantMessage key={m.id} message={m} />
           ))}
+
           {isLoading && <OpenAIAssistantMessage message={streamingMessage} />}
-          <form onSubmit={handleSubmit} className="m-2 flex">
-            <input
-              disabled={isLoading}
-              className="border rounded w-full py-2 px-3 text-gray-70"
-              onChange={handlePromptChange}
-              value={prompt}
-              placeholder="prompt"
-            />
+
+          <Form onSubmit={handleSubmit} className="m-2 flex">
+            <br />
+
+            <Form.Group className="mb-3" onChange={handlePromptChange}>
+              {/* <Form.Label>Legal Question</Form.Label> */}
+              <Form.Control
+                type="text"
+                placeholder="Your legal question"
+                disabled={isLoading}
+                value={prompt}
+              />
+              <Form.Text className="text-muted"></Form.Text>
+            </Form.Group>
+
             {isLoading ? (
-              <button
-                disabled
-                className="ml-2  bg-blue-500 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-              >
-                <Spinner />
-              </button>
+              <Button disabled>
+                <Spinner animation="grow" />
+              </Button>
             ) : (
-              <button
-                disabled={prompt.length == 0}
-                className="ml-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-              >
-                SEND
-              </button>
+              <Button disabled={prompt.length == 0} variant="primary">
+                Ask Bob
+              </Button>
             )}
-          </form>
-        </div>
-      </main>
+          </Form>
+        </Col>
+      </Row>
 
       <footer>
         <hr />
-        <p>
-          This page is fictional, and you really shouldn't trust any of the
-          advice given here
-        </p>
+        <small>
+          <p>
+            This page is fictional, powered by bad AI. Don't trust any of the
+            advice given here.
+            <br />
+            Made by <a href="https://www.evantahler.com">Evan</a>
+          </p>
+        </small>
       </footer>
     </div>
   );
@@ -179,12 +174,36 @@ export function OpenAIAssistantMessage({ message }) {
         return "🤖";
     }
   }
+
+  function variantRole(roleName) {
+    switch (roleName) {
+      case "user":
+        return "secondary";
+      case "assistant":
+        return "secondary";
+    }
+  }
+
   return (
-    <div className="flex rounded text-gray-700 text-center bg-white px-4 py-2 m-2 shadow-md">
-      <div className="text-4xl">{displayRole(message.role)}</div>
-      <div className="mx-4 text-left overflow-auto openai-text">
-        <Markdown>{message.content}</Markdown>
-      </div>
-    </div>
+    <Card bg={variantRole(message.role)}>
+      <Card.Body>
+        <Row>
+          <Col md={1}>
+            <span style={{ fontSize: "200%" }}>
+              {displayRole(message.role)}
+            </span>
+          </Col>
+          <Col>
+            <Card.Text>{message.content}</Card.Text>
+          </Col>
+        </Row>
+      </Card.Body>
+    </Card>
+    // <div className="flex rounded text-gray-700 text-center bg-white px-4 py-2 m-2 shadow-md">
+    //   <div className="text-4xl">{displayRole(message.role)}</div>
+    //   <div className="mx-4 text-left overflow-auto openai-text">
+    //     <Markdown>{message.content}</Markdown>
+    //   </div>
+    // </div>
   );
 }

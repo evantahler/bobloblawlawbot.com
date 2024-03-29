@@ -1,4 +1,3 @@
-import { NextApiResponse } from "next";
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 
