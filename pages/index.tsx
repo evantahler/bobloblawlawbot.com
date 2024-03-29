@@ -1,6 +1,6 @@
 import { Row, Col, Spinner, Button, Card, Form } from "react-bootstrap";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Markdown from "react-markdown";
 
 const assistantId = process.env.NEXT_PUBLIC_OPENAI_ASSISTANT_ID;
@@ -16,11 +16,16 @@ const greetingMessage = { role: "assistant", content: "Sups?" };
 const thinkingMessage = { role: "assistant", content: "🧠" };
 
 export default function Index() {
+  const [isClient, setIsClient] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [threadId, setThreadId] = useState<string>();
   const [prompt, setPrompt] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [streamingMessage, setStreamingMessage] = useState(thinkingMessage);
+
+  useEffect(() => {
+    setIsClient(true);
+  });
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -116,13 +121,25 @@ export default function Index() {
           <img src="/icon.webp" style={{ maxWidth: "95%", padding: 3 }} />
         </Col>
         <Col>
-          <OpenAIAssistantMessage message={greetingMessage} />
+          <OpenAIAssistantMessage
+            message={greetingMessage}
+            isClient={isClient}
+          />
 
           {messages.map((m) => (
-            <OpenAIAssistantMessage key={m.id} message={m} />
+            <OpenAIAssistantMessage
+              key={m.id}
+              message={m}
+              isClient={isClient}
+            />
           ))}
 
-          {isLoading && <OpenAIAssistantMessage message={streamingMessage} />}
+          {isLoading && (
+            <OpenAIAssistantMessage
+              message={streamingMessage}
+              isClient={isClient}
+            />
+          )}
 
           <Form onSubmit={handleSubmit} className="m-2 flex">
             <br />
@@ -143,7 +160,11 @@ export default function Index() {
                 <Spinner animation="grow" />
               </Button>
             ) : (
-              <Button disabled={prompt.length == 0} variant="primary">
+              <Button
+                disabled={prompt.length == 0}
+                type="submit"
+                variant="primary"
+              >
                 Ask Bob
               </Button>
             )}
@@ -153,20 +174,21 @@ export default function Index() {
 
       <footer>
         <hr />
-        <small>
-          <p>
+
+        <p>
+          <small>
             This page is fictional, powered by bad AI. Don't trust any of the
             advice given here.
             <br />
-            Made by <a href="https://www.evantahler.com">Evan</a>
-          </p>
-        </small>
+            Made by <a href="https://www.evantahler.com">Evan</a>{" "}
+          </small>
+        </p>
       </footer>
     </div>
   );
 }
 
-export function OpenAIAssistantMessage({ message }) {
+export function OpenAIAssistantMessage({ message, isClient }) {
   function displayRole(roleName) {
     switch (roleName) {
       case "user":
@@ -196,7 +218,11 @@ export function OpenAIAssistantMessage({ message }) {
           </Col>
           <Col>
             <Card.Text>
-              <Markdown>{message.content}</Markdown>
+              {isClient ? (
+                <Markdown>{message.content}</Markdown>
+              ) : (
+                message.content
+              )}
             </Card.Text>
           </Col>
         </Row>
