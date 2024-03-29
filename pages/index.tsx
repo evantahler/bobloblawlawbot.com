@@ -1,6 +1,7 @@
 import { Row, Col, Spinner, Button, Card, Form } from "react-bootstrap";
 import Image from "next/image";
 import { useState } from "react";
+import Markdown from "react-markdown";
 
 const assistantId = process.env.NEXT_PUBLIC_OPENAI_ASSISTANT_ID;
 const messageLimit = 100;
@@ -194,16 +195,12 @@ export function OpenAIAssistantMessage({ message }) {
             </span>
           </Col>
           <Col>
-            <Card.Text>{message.content}</Card.Text>
+            <Card.Text>
+              <Markdown>{message.content}</Markdown>
+            </Card.Text>
           </Col>
         </Row>
       </Card.Body>
     </Card>
-    // <div className="flex rounded text-gray-700 text-center bg-white px-4 py-2 m-2 shadow-md">
-    //   <div className="text-4xl">{displayRole(message.role)}</div>
-    //   <div className="mx-4 text-left overflow-auto openai-text">
-    //     <Markdown>{message.content}</Markdown>
-    //   </div>
-    // </div>
   );
 }
