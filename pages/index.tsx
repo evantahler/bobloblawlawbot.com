@@ -180,7 +180,9 @@ export default function Index() {
             This page is fictional, powered by bad AI. Don't trust any of the
             advice given here.
             <br />
-            Made by <a href="https://www.evantahler.com">Evan</a>{" "}
+            Made by <a href="https://www.evantahler.com">Evan</a> (
+            <a href="https://github.com/evantahler/bobloblawlawbot.com">code</a>
+            )
           </small>
         </p>
       </footer>
