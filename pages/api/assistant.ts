@@ -20,14 +20,12 @@ async function POST(request: NextRequest) {
     content: newMessage.content,
   });
 
-  // create a run
-  const run = openai.beta.threads.runs.createAndStream(newMessage.threadId, {
+  // create and stream the run using v2 API
+  const stream = openai.beta.threads.runs.createAndStream(newMessage.threadId, {
     assistant_id: newMessage.assistantId,
-    stream: true,
   });
 
-  const stream = run.toReadableStream();
-  return new Response(stream);
+  return new Response(stream.toReadableStream());
 }
 
 async function GET(request: NextRequest) {
